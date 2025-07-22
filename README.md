@@ -1,38 +1,66 @@
-# sv
+# 🪄 tw-betweeny
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A Tailwind CSS plugin that adds support for fluid, clamped values using `~` notation. Perfect for modern responsive designs where values scale between a `min` and `max` depending on viewport width.
 
-## Creating a project
+## 🤔 Okay but what does that even mean?
 
-If you're seeing this, you've probably already done this step. Congrats!
+Normally in Tailwind, you'd do stuff like:
 
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+```html
+<div class="px-4 sm:px-8 lg:px-12">...</div>
 ```
 
-## Developing
+You're manually defining values at multiple breakpoints just to make things scale nicely.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+With **tw-betweeny**, you can simply write:
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```html
+<div class="px-[4~12]">...</div>
 ```
 
-## Building
+And boom; it smoothly scales between `1rem` (4) and `3rem` (12) based on the viewport width. No breakpoints. No extra classes. Just chill.
 
-To create a production version of your app:
+---
 
-```bash
-npm run build
+### ⚙️ Behind the Scenes
+
+* Plugin assumes your min viewport is `320px` and max is `1600px` by default. ( You may change this in the source-code itself. `./tw-betweeny.ts` line `3`).
+* It auto-generates a `clamp()` CSS function
+* Every screen size in between is fluidly handled
+
+> Define the smallest screen value → define the largest → **done**
+>
+> No need to micromanage every breakpoint anymore.
+
+---
+
+# The Plugin In Action:
+
+![diff_normal_betweeny](assets/diff_normal_betweeny.png)
+
+
+## 📐 Supported Utilities
+
+| Prefix                           | CSS Output                      |
+| -------------------------------- | ------------------------------- |
+| `text`                           | `font-size`, auto `line-height` |
+| `p`, `px`, `py`, `pt`, etc.      | `padding-*`                     |
+| `m`, `mx`, `my`, `mt`, etc.      | `margin-*`                      |
+| `w`, `h`, `min-w`, `max-w`, etc. | size props                      |
+| `space-x`, `space-y`             | child spacing                   |
+
+# Installation:
+
+> [!NOTE]
+> This assumes you are using tailwindcss `V4+` & this repo has an `input.css` and an `app.css` ( the output ), because I'm using the tailwindcss standalone binary. 
+
+1. Just copy the `tw-betweeny.ts` file into your project
+2. Put the following in your `input.css` or wherever your css file is if you aren't using the standalone binary:
+```css
+@import "tailwindcss";
+@plugin "<path_to_tw-betweeny.ts>"
 ```
+3. Enjoy.
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+> [!TIP]
+> The repo shows an example of a sveltekit project using this plugin, so that you have a reference to port it into the framework of your liking.
