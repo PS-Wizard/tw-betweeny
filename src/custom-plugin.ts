@@ -1,4 +1,3 @@
-// tailwind.plugin.ts
 import plugin from 'tailwindcss/plugin';
 
 const clampValue = (min: string, max: string, unit = '') =>
@@ -51,29 +50,129 @@ export default plugin(function({ matchUtilities, theme }) {
         matchUtilities(
             {
                 [prefix]: (value) => {
-                    if (!value.includes('~')) return {}; // let normal tailwind handle it
+                    if (!value.includes('~')) return {};
 
                     const [minRaw, maxRaw] = value.split('~');
 
                     let minVal = resolveThemeValue(themeSection, minRaw) || minRaw;
                     let maxVal = resolveThemeValue(themeSection, maxRaw) || maxRaw;
 
-                    if (Array.isArray(minVal)) minVal = minVal[0];
-                    if (Array.isArray(maxVal)) maxVal = maxVal[0];
+                    const normalize = (val: any) => {
+                        const raw = Array.isArray(val) ? val[0] : val;
+                        const { num, unit } = extractUnit(raw);
+                        const px = unit === 'rem' ? parseFloat(num) * 16 : parseFloat(num);
+                        return { px, unit };
+                    };
 
-                    const { num: min, unit } = extractUnit(minVal);
-                    const { num: max } = extractUnit(maxVal);
+                    const minParsed = normalize(minVal);
+                    const maxParsed = normalize(maxVal);
 
-                    const clamp = clampValue(min, max, unit);
+                    const clampFontSize = clampValue(
+                        minParsed.px.toString(),
+                        maxParsed.px.toString(),
+                        'px'
+                    );
+
+                    const styles: Record<string, string> = {};
 
                     if (Array.isArray(cssProps)) {
-                        return Object.fromEntries(cssProps.map((prop) => [prop, clamp]));
+                        cssProps.forEach((prop) => (styles[prop] = clampFontSize));
                     } else {
-                        return { [cssProps]: clamp };
+                        styles[cssProps] = clampFontSize;
                     }
-                },
+
+                    // ⏬ Also apply line-height if we're doing font-size
+                    if (prefix === 'text') {
+                        const minLine = Array.isArray(minVal) && minVal[1]?.lineHeight;
+                        const maxLine = Array.isArray(maxVal) && maxVal[1]?.lineHeight;
+
+                        if (minLine && maxLine) {
+                            const minL = normalize(minLine);
+                            const maxL = normalize(maxLine);
+
+                            const clampLineHeight = clampValue(
+                                minL.px.toString(),
+                                maxL.px.toString(),
+                                'px'
+                            );
+
+                            styles['line-height'] = clampLineHeight;
+                        }
+                    }
+
+                    return styles;
+                }
             },
             { values: themeSection }
         );
+        matchUtilities(
+            {
+                'space-x': (value) => {
+                    if (!value.includes('~')) return {};
+                    const [minRaw, maxRaw] = value.split('~');
+
+                    let minVal = resolveThemeValue(theme('spacing'), minRaw) || minRaw;
+                    let maxVal = resolveThemeValue(theme('spacing'), maxRaw) || maxRaw;
+
+                    const normalize = (val: any) => {
+                        const raw = Array.isArray(val) ? val[0] : val;
+                        const { num, unit } = extractUnit(raw);
+                        const px = unit === 'rem' ? parseFloat(num) * 16 : parseFloat(num);
+                        return { px, unit };
+                    };
+
+                    const minParsed = normalize(minVal);
+                    const maxParsed = normalize(maxVal);
+
+                    const clamp = clampValue(
+                        minParsed.px.toString(),
+                        maxParsed.px.toString(),
+                        'px'
+                    );
+
+                    return {
+                        '> :not([hidden]) ~ :not([hidden])': {
+                            '--tw-space-x-reverse': '0',
+                            'margin-left': `calc(${clamp} * calc(1 - var(--tw-space-x-reverse)))`,
+                            'margin-right': `calc(${clamp} * var(--tw-space-x-reverse))`,
+                        },
+                    };
+                },
+                'space-y': (value) => {
+                    if (!value.includes('~')) return {};
+
+                    const [minRaw, maxRaw] = value.split('~');
+
+                    let minVal = resolveThemeValue(theme('spacing'), minRaw) || minRaw;
+                    let maxVal = resolveThemeValue(theme('spacing'), maxRaw) || maxRaw;
+
+                    const normalize = (val: any) => {
+                        const raw = Array.isArray(val) ? val[0] : val;
+                        const { num, unit } = extractUnit(raw);
+                        const px = unit === 'rem' ? parseFloat(num) * 16 : parseFloat(num);
+                        return { px, unit };
+                    };
+
+                    const minParsed = normalize(minVal);
+                    const maxParsed = normalize(maxVal);
+
+                    const clamp = clampValue(
+                        minParsed.px.toString(),
+                        maxParsed.px.toString(),
+                        'px'
+                    );
+
+                    return {
+                        '> :not([hidden]) ~ :not([hidden])': {
+                            '--tw-space-y-reverse': '0',
+                            'margin-top': `calc(${clamp} * calc(1 - var(--tw-space-y-reverse)))`,
+                            'margin-bottom': `calc(${clamp} * var(--tw-space-y-reverse))`,
+                        },
+                    };
+                },
+            },
+            { values: theme('spacing') }
+        );
+
     });
 });

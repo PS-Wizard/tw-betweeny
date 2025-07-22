@@ -26,7 +26,7 @@
         <p>Clamped font size clamp(12px, 18px, 24px)</p>
     </div>
 
-    <div class="text-[sm~120px] bg-gray-300">
+    <div class="text-[sm~4xl] bg-gray-300">
         <p>sm to lg</p>
     </div>
 
@@ -37,5 +37,18 @@
         <div class="bg-pink-700 w-[8px~64px] h-[8px~64px]"></div>
     </div>
 </div>
+
+<div class="space-x-[2~8] bg-gray-100 flex">
+    <div class="bg-blue-500 p-4 text-white">Item 1</div>
+    <div class="bg-blue-600 p-4 text-white">Item 2</div>
+    <div class="bg-blue-700 p-4 text-white">Item 3</div>
+</div>
+
+<div class="space-y-[1~6] bg-gray-100 mt-8">
+    <div class="bg-green-500 p-4 text-white">Item A</div>
+    <div class="bg-green-600 p-4 text-white">Item B</div>
+    <div class="bg-green-700 p-4 text-white">Item C</div>
+</div>
+
 <style>
 </style>
